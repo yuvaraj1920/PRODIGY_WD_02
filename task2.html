@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        #stopwatch {
+            font-size: 36px;
+            margin-top: 20px;
+        }
+
+        #controls {
+            margin-top: 20px;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 0 10px;
+        }
+
+        #lap-times {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+    <title>Stopwatch</title>
+</head>
+<body>
+    <h1>Stopwatch</h1>
+    <div id="stopwatch">0:00:00</div>
+    <div id="controls">
+        <button id="startStop">Start</button>
+        <button id="reset">Reset</button>
+        <button id="lap">Lap</button>
+    </div>
+    <div id="lap-times"></div>
+
+    <script>
+        let isRunning = false;
+        let startTime;
+        let lapTimes = [];
+        let lapCount = 1;
+        let interval;
+
+        function updateStopwatch() {
+            const currentTime = new Date().getTime();
+            const elapsedTime = new Date(currentTime - startTime);
+            const hours = String(elapsedTime.getUTCHours()).padStart(2, '0');
+            const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
+            const milliseconds = String(elapsedTime.getUTCMilliseconds()).padStart(3, '0');
+            document.getElementById('stopwatch').textContent = `${hours}:${minutes}:${seconds}.${milliseconds}`;
+        }
+
+        function startStop() {
+            if (isRunning) {
+                clearInterval(interval);
+                document.getElementById('startStop').textContent = 'Start';
+            } else {
+                startTime = new Date().getTime() - (lapTimes.length > 0 ? lapTimes[lapTimes.length - 1].elapsed : 0);
+                interval = setInterval(updateStopwatch, 10);
+                document.getElementById('startStop').textContent = 'Stop';
+            }
+            isRunning = !isRunning;
+        }
+
+        function reset() {
+            clearInterval(interval);
+            document.getElementById('stopwatch').textContent = '0:00:00.000';
+            document.getElementById('startStop').textContent = 'Start';
+            lapTimes = [];
+            lapCount = 1;
+            document.getElementById('lap-times').textContent = '';
+            isRunning = false;
+        }
+
+        function lap() {
+            if (isRunning) {
+                const currentTime = new Date().getTime();
+                const elapsed = currentTime - startTime;
+                const lapTime = {
+                    lap: lapCount++,
+                    time: elapsed
+                };
+                lapTimes.push(lapTime);
+                const lapTimeString = `${lapTime.lap}: ${new Date(lapTime.time).toISOString().substr(11, 8)}`;
+                document.getElementById('lap-times').innerHTML += `<div>${lapTimeString}</div>`;
+            }
+        }
+
+        document.getElementById('startStop').addEventListener('click', startStop);
+        document.getElementById('reset').addEventListener('click', reset);
+        document.getElementById('lap').addEventListener('click', lap);
+    </script>
+</body>
+</html>
